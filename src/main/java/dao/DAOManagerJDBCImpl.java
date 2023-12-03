@@ -2,16 +2,13 @@ package dao;
 
 import model.Club;
 import model.Player;
+import model.PlayerId;
 
 import javax.persistence.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -22,13 +19,9 @@ public class DAOManagerJDBCImpl implements DAOManager {
     public DAOManagerJDBCImpl() {
         emfactory = Persistence.createEntityManagerFactory("ORMPremier");
         entityManager = emfactory.createEntityManager();
+    }
 
-        // DeleteTeam("ARS");
-        // Club club = getTeamByName("Arsenal");
-        // Club club2 = getTeamByAbbr("ARS");
-        // getAllTeams();
-        // UpdateTeam(club);
-
+    public void ClosePersistence() {
         entityManager.close();
         emfactory.close();
     }
@@ -36,13 +29,13 @@ public class DAOManagerJDBCImpl implements DAOManager {
     // EX_3.2
 
     // AddTeam _ FET
-    public boolean AddTeam(Club team) {
+    public boolean AddTeam(Club club) {
         boolean result = false;
         try {
             EntityTransaction transaction = null;
             transaction = entityManager.getTransaction();
             transaction.begin();
-            entityManager.persist(team);
+            entityManager.persist(club);
             transaction.commit();
             result = true;
         } catch (Exception e) {
@@ -65,9 +58,9 @@ public class DAOManagerJDBCImpl implements DAOManager {
             if(resultsCount == 0) {
                 Club club = entityManager.find( Club.class, teamAbv);
                 entityManager.remove( club );
-                transaction.commit();
                 result = true;
             }
+            transaction.commit();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,8 +75,8 @@ public class DAOManagerJDBCImpl implements DAOManager {
             transaction = entityManager.getTransaction();
             transaction.begin();
             // Create Query
-            Query query = entityManager.createQuery("SELECT COUNT(p) FROM Player p WHERE p.club_abv = :club_abv");
-            query.setParameter("club_abv", team.getAbv());
+            Query query = entityManager.createQuery("SELECT COUNT(p) FROM Player p WHERE p.club = :club");
+            query.setParameter("club", team);
             long playersCount = (long)query.getSingleResult();
             if(playersCount == 0) {
                 teamUpdate = entityManager.find( Club.class, team.getAbv());
@@ -145,12 +138,12 @@ public class DAOManagerJDBCImpl implements DAOManager {
 
     // EX_3.3
 
-    // AddPlayer _
+    // AddPlayer _ FET
     public boolean AddPlayer(Player onePlayer) {
         boolean result = false;
+        EntityTransaction transaction = null;
+        transaction = entityManager.getTransaction();
         try {
-            EntityTransaction transaction = null;
-            transaction = entityManager.getTransaction();
             transaction.begin();
             entityManager.persist(onePlayer);
             transaction.commit();
@@ -161,6 +154,7 @@ public class DAOManagerJDBCImpl implements DAOManager {
         return result;
     }
 
+    // ImportPlayers _ FET
     public int ImportPlayers(String filePlayers, String clubName) {
         // Club
         Club club = getTeamByName(clubName);
@@ -175,28 +169,29 @@ public class DAOManagerJDBCImpl implements DAOManager {
             while ((line = br.readLine()) != null) {
                 // Separate lines
                 StringTokenizer tokenizer = new StringTokenizer(line, ";");
-
                 String player_Name = tokenizer.nextToken().trim();
                 String club_Name = tokenizer.nextToken().trim();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-                Date date = dateFormat.parse(tokenizer.nextToken().trim());
-                java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+                String date = tokenizer.nextToken().trim();
                 String height = tokenizer.nextToken().trim();
                 String position = tokenizer.nextToken().trim();
                 String season = tokenizer.nextToken().trim();
                 height = height.replaceAll("[^0-9]", "");
-                int heightNumbers = Integer.parseInt(height);
+                int heightNumbers = 0;
+                if (!height.isEmpty()) {
+                    heightNumbers = Integer.parseInt(height);
+                }
 
-                if((clubName.contains(club_Name) || club_Name.contains(clubName)) && (season == "2022-202")) {
+                if((clubName.contains(club_Name) || club_Name.contains(clubName)) && season.equals("2022-2023")) {
+                    // System.out.println(player_Name + " - " + club_Name);
                     // Create player
-                    Player player = new Player(club.getAbv(), player_Name, heightNumbers, position, sqlDate);
+                    Player player = new Player(club, player_Name, heightNumbers, position);
                     // Call Add Player
                     AddPlayer(player);
                     // Count players added
                     importedPlayers++;
                 }
             }
-        } catch (IOException | ParseException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return importedPlayers;
@@ -204,4 +199,20 @@ public class DAOManagerJDBCImpl implements DAOManager {
 
     // EX_3.4
 
+    public boolean AddTeamEx3(Club club, List<Player> playerList) {
+        boolean result;
+        try {
+            EntityTransaction transaction = null;
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+            club.setPlayerList(playerList);
+            entityManager.persist(club);
+            transaction.commit();
+            result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            result = false;
+        }
+        return result;
+    }
 }

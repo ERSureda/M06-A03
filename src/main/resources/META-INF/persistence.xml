@@ -6,9 +6,9 @@
     <persistence-unit name="ORMPremier" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <class>org.example.M06-A3.model.Club</class>
-        <class>org.example.M06-A3.model.Result</class>
-        <class>org.example.M06-A3.model.Player</class>
+        <class>org.example.M06-A03.model.Club</class>
+        <class>org.example.M06-A03.model.Result</class>
+        <class>org.example.M06-A03.model.Player</class>
 
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>

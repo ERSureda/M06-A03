@@ -2,17 +2,17 @@ package model;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
 
 @Entity
 @Table(name = "Players")
-@IdClass(Player.class)
+//@IdClass(PlayerId.class)
 public class Player implements Serializable {
     private static final long serialVersionUID = 1L;
+    @ManyToOne( fetch = FetchType.LAZY )
+    @JoinColumn( name = "Club_abv")
+    private Club club;
     @Id
-    @Column(name = "club_abv")
-    private String club_abv;
-    @Id
+    @GeneratedValue( strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
     @Column(name = "name")
@@ -21,26 +21,17 @@ public class Player implements Serializable {
     private int height;
     @Column(name = "position")
     private String position;
-    @Column(name = "Born")
-    private Date born;
+
 
     public Player() {}
 
-    public Player(String club_abv, String name, int height, String position, Date born) {
-        this.club_abv = club_abv;
+    public Player(Club club, String name, int height, String position) {
+        this.club = club;
         this.name = name;
         this.height = height;
         this.position = position;
-        this.born = born;
     }
 
-    public String getClub_abv() {
-        return club_abv;
-    }
-
-    public void setClub_abv(String club_abv) {
-        this.club_abv = club_abv;
-    }
 
     public int getId() {
         return id;
@@ -74,11 +65,11 @@ public class Player implements Serializable {
         this.position = position;
     }
 
-    public Date getBorn() {
-        return born;
+    public Club getClub() {
+        return club;
     }
 
-    public void setBorn(Date born) {
-        this.born = born;
+    public void setClub(Club club) {
+        this.club = club;
     }
 }

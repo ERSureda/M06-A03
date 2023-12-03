@@ -1,9 +1,6 @@
 package model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
@@ -11,7 +8,9 @@ import java.util.Date;
 
 @Entity
 @Table(name = "Results")
+@IdClass(ResultId.class)
 public class Result implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Column(name = "division")
     private String division;
     @Id

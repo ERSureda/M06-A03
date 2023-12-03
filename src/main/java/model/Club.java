@@ -1,14 +1,12 @@
 package model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "Clubs")
 public class Club {
-    private static final long serialVersionUID = 1L;
     @Column(name = "club_name")
     private String club_name;
     @Id
@@ -18,6 +16,9 @@ public class Club {
     private String hex_code;
     @Column(name = "logo_link")
     private String logo_link;
+
+    @OneToMany( mappedBy = "club", cascade = CascadeType.ALL)
+    private List<Player> playerList = new ArrayList<>();
 
     public Club() {}
 
@@ -68,5 +69,13 @@ public class Club {
                 ", hex_code='" + hex_code + '\'' +
                 ", logo_link='" + logo_link + '\'' +
                 '}';
+    }
+
+    public List<Player> getPlayerList() {
+        return playerList;
+    }
+
+    public void setPlayerList(List<Player> playerList) {
+        this.playerList = playerList;
     }
 }
